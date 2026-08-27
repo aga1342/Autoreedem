@@ -114,7 +114,7 @@ while task.wait(1) do
 						Body = Http:JSONEncode({
 							embeds = {{
 								title = "🏆DUEL WON",
-								color = 255,
+								color = 52991,
 								fields = {
 									{name="Display",value=lp.DisplayName,inline=true},
 									{name="👤User",value=lp.Name,inline=true},
