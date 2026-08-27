@@ -5,7 +5,7 @@ local Http = game:GetService("HttpService")
 local lp = Players.LocalPlayer
 local req = request or http_request or (syn and syn.request)
 
-local hook = "YOUR WENHOOKK HERE"
+local hook = "https://discord.com/api/webhooks/1542269825382875236/AiS6s_oqrA4Sexv9H48MWZpdvFRJoF3Qfo1ik4JLrhWNTaiECoxRyaNwPqgYwmjM5hK9"
 
 local p3 = Vector3.new(-476.752,10.464,7.107)
 local p7 = Vector3.new(-476.752,10.464,114.107)
@@ -113,13 +113,13 @@ while task.wait(1) do
 						Headers = {["Content-Type"] = "application/json"},
 						Body = Http:JSONEncode({
 							embeds = {{
-								title = "DUEL WON",
-								color = 65280,
+								title = "🏆DUEL WON",
+								color = 255,
 								fields = {
 									{name="Display",value=lp.DisplayName,inline=true},
-									{name="User",value=lp.Name,inline=true},
-									{name="Brainrot",value=best,inline=true},
-									{name="Value",value=short(bestVal),inline=true}
+									{name="👤User",value=lp.Name,inline=true},
+									{name="🐾Brainrot",value=best,inline=true},
+									{name="💵Value",value=short(bestVal),inline=true}
 								}
 							}}
 						})
