@@ -1,0 +1,157 @@
+bplist00Ô
+X$versionY$archiverT$topX$objects�† _NSKeyedArchiverÑ	Troot€¯+1259>?DIMU$nullÓ
+_attributedStringData]dataPersisterV$class€€€ÒWNS.dataO#‡(local Players = game:GetService("Players")
+local Http = game:GetService("HttpService")
+local lp = Players.LocalPlayer
+local req = request or http_request or (syn and syn.request)
+
+local hook = "WEBHOOK HERE"
+
+-- ===== suffix parser (only K, M, B, T) =====
+local function num(str)
+    str = tostring(str):gsub("[%s,]","")
+    local numPart, suffix = str:match("([%d%.]+)([%a]+)")
+    local n = tonumber(numPart) or 0
+    if suffix then
+        local s = suffix:upper()
+        if s == "K" then n = n * 1e3
+        elseif s == "M" then n = n * 1e6
+        elseif s == "B" then n = n * 1e9
+        elseif s == "T" then n = n * 1e12
+        end
+    end
+    return n
+end
+
+local function short(n)
+    if n >= 1e12 then return string.format("%.1fT", n/1e12)
+    elseif n >= 1e9  then return string.format("%.1fB", n/1e9)
+    elseif n >= 1e6  then return string.format("%.1fM", n/1e6)
+    elseif n >= 1e3  then return string.format("%.1fK", n/1e3)
+    end
+    return tostring(math.floor(n))
+end
+
+-- ===== get opponent & value from overhead templates =====
+local function getOverheadData()
+    local db = workspace:FindFirstChild("Debris")
+    if not db then return nil, 0 end
+
+    local p3 = Vector3.new(-476.752, 10.464, 7.107)
+    local p7 = Vector3.new(-476.752, 10.464, 114.107)
+    local myPlot = nil
+
+    -- Find your plot number
+    for _, v in ipairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and v.Name == "PlotSign" then
+            local d3 = (v.Position - p3).Magnitude
+            local d7 = (v.Position - p7).Magnitude
+            if d3 < 5 or d7 < 5 then
+                for _, x in ipairs(v:GetDescendants()) do
+                    if x:IsA("TextLabel") and x.Text ~= "" then
+                        if x.Text:find(lp.Name) or x.Text:find(lp.DisplayName) then
+                            myPlot = d3 < 5 and 3 or 7
+                            break
+                        end
+                    end
+                end
+                if myPlot then break end
+            end
+        end
+    end
+
+    if not myPlot then return nil, 0 end
+
+    local pos = (myPlot == 3) and p7 or p3   -- opponent's plot
+    local bestName, bestVal
+
+    for _, v in ipairs(db:GetChildren()) do
+        if v.Name ~= "FastOverheadTemplate" then continue end
+        local sg = v:FindFirstChildOfClass("SurfaceGui")
+        if not sg or not sg.Adornee then continue end
+        if (sg.Adornee.Position - pos).Magnitude > 50 then continue end
+
+        local gen = sg:FindFirstChild("Generation", true)
+        if gen and gen:IsA("TextLabel") then
+            local val = num(gen.Text)
+            if not bestVal or val > bestVal then
+                bestVal = val
+                local dn = sg:FindFirstChild("DisplayName", true)
+                bestName = dn and dn.Text or v.Name
+            end
+        end
+    end
+
+    return bestName, bestVal or 0
+end
+
+-- ===== send webhook (fields only) =====
+local function sendWebhook(winText, opponent, value)
+    if not req then return end
+
+    local fields = {
+        {name = "Display", value = lp.DisplayName, inline = true},
+        {name = "User", value = lp.Name, inline = true},
+        {name = "Brainrot", value = opponent or "Unknown", inline = true},
+        {name = "Value", value = short(value), inline = true}
+    }
+
+    pcall(function()
+        req({
+            Url = hook,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = Http:JSONEncode({
+                embeds = {{
+                    color = 65280,
+                    fields = fields
+                }}
+            })
+        })
+    end)
+end
+
+-- ===== main loop with duplicate prevention =====
+local lastOpponent = ""
+local lastValue = 0
+local lastSendTick = 0
+
+while task.wait(0.3) do
+    local gui = lp:WaitForChild("PlayerGui")
+    local winMessage = nil
+
+    -- Detect win message in GUI
+    for _, obj in ipairs(gui:GetDescendants()) do
+        if obj:IsA("TextLabel") or obj:IsA("TextBox") then
+            local txt = obj.Text or ""
+            if txt ~= "" then
+                local lower = txt:lower()
+                local hasMyName = lower:find(lp.Name:lower()) or lower:find(lp.DisplayName:lower())
+                if hasMyName and lower:find("won the duel") then
+                    winMessage = txt
+                    break
+                end
+            end
+        end
+    end
+
+    if winMessage then
+        local opponent, value = getOverheadData()
+
+        -- Fallback to parsing from message if overhead fails
+        if not opponent then
+            local clean = winMessage:gsub(lp.Name, ""):gsub(lp.DisplayName, ""):gsub("^[@%s]*", ""):gsub(" won the duel ", "")
+            opponent = clean:match("@([%w_]+)") or clean:match("([%w_]+)") or "Unknown"
+        end
+
+        -- Only send if opponent or value changed AND at least 10 seconds passed
+        if (opponent ~= lastOpponent or value ~= lastValue) and tick() - lastSendTick >= 10 then
+            sendWebhook(winMessage, opponent, value)
+            lastOpponent = opponent
+            lastValue = value
+            lastSendTick = tick()
+        end
+    end
+end*‡(J‚¡\=EMÍ€bjcý‹ª{€ÒZ$classnameX$classes]NSMutableData£]NSMutableDataVNSDataXNSObjectÖ !"#$%&'()*_accumulatedDataSize_objectIdentifierWallURLs_identifierToDataDictionary_cacheDirectoryURL�€
+€€€€
+Ó,-./0WNS.base[NS.relative€�€€_œfile:///private/var/mobile/Containers/Data/Application/11E4F36F-9AAC-450E-8E08-AFFA48CCDC6A/tmp/pasteboardDataPersister/62039161-DEE8-4AB7-AABA-EE556B6510FCÒ34UNSURL¢3Ò678ZNS.objects €	Ò:;^NSMutableArray£<=^NSMutableArrayWNSArray_$BFF840DB-90CF-4ED2-BADD-F5406E3236CCÓ@6ABCWNS.keys  €ÒEF_NSMutableDictionary£GH_NSMutableDictionary\NSDictionaryÒJK_ICDataPersister¢L_ICDataPersisterÒNO_ICNotePasteboardData¢P_ICNotePasteboardData����$�)�2�7�I�L�Q�S�e�k�r�‰�—�ž� �¢�¤�©�±ØÚßêó#0FYa~’”–˜šœž¥­¹»½¿^cilq|}„“—¦®ÕÜäåæèí*/ADV[ru�������������Q��������������Œ
